@@ -121,11 +121,11 @@ class MyRobot(commands2.TimedCommandRobot):
     def teleopPeriodic(self) -> None:
         """This function is called periodically during operator control"""
         #intake code
-        if self.driverController.getYButton():#
+        if self.toolController.getYButton(): #self.driverController.getYButton():
             self.intakeArm.set(.25)
             self.intakeArmFollower.set(.25) 
             #makes intake go in at half speed
-        elif self.driverController.getAButton():
+        elif self.toolController.getXButton():#self.driverController.getAButton():
             self.intakeArm.set(-.25) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
             self.intakeArmFollower.set(-.25)
             #makes intake go out at half speed
@@ -134,10 +134,10 @@ class MyRobot(commands2.TimedCommandRobot):
             self.intakeArmFollower.set(0)
             #sets intake power to 0 when nothing is pressed
 
-        if self.driverController.rightBumper():
+        if self.toolController.rightBumper():#self.driverController.rightBumper():
             self.intakePower.set(-.5)
             #makes the intake go forward
-        elif self.driverController.leftBumper():
+        elif self.toolController.leftBumper():#self.driverController.leftBumper():
             self.intakePower.set(.5)
             #makes intake go backward
         else:
@@ -149,10 +149,10 @@ class MyRobot(commands2.TimedCommandRobot):
         self.flywheelTwo.set(1 * self.toolController.rightThrottle())
         
         #conveyor code
-        if self.toolController.getXButton():
+        if self.toolController.getAButton():
             self.conveyorMotor.set(-.5)
             self.transferMotor.set(.5)
-        if self.toolController.getYButton():
+        if self.toolController.getBButton():
             self.conveyorMotor.set(0)
             self.transferMotor.set(0)
 
