@@ -63,13 +63,16 @@ class MyRobot(commands2.TimedCommandRobot):
         self.toolController: XboxController = XboxController(1)
         
         #2 servos
-        self.hoodServoOne = wpilib.Servo(1)
-        self.hoodServoTwo = wpilib.Servo(2)
+        self.hoodServoOne = wpilib.Servo(8)
+        self.hoodServoTwo = wpilib.Servo(9)
         self.angle = 0
         # Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         # autonomous chooser on the dashboard.
         self.container = RobotContainer()
         self.IMU.reset()
+        self.targetRPM = 4500
+        self.targetRPS = self.targetRPM / 60
+
 
         # log and replay timestamp and joystick data
         self._time_and_joystick_replay = (
@@ -125,13 +128,13 @@ class MyRobot(commands2.TimedCommandRobot):
     def teleopPeriodic(self) -> None:
         """This function is called periodically during operator control"""
         #intake code
-        if self.toolController.getYButton(): #self.driverController.getYButton():
-            self.intakeArm.set(.25)
-            self.intakeArmFollower.set(.25) 
+        if self.toolController.rightThrottle > 0: #self.driverController.getYButton(): bmmmmmmm TRIGGERS!!!!!!!!!!!!
+            self.intakeArm.set(.25 * self.toolController.rightThrottle()) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
+            self.intakeArmFollower.set(.25 * self.toolController.rightThrottle()) 
             #makes intake go in at half speed
-        elif self.toolController.getXButton():#self.driverController.getAButton():
-            self.intakeArm.set(-.25) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
-            self.intakeArmFollower.set(-.25)
+        elif self.toolController.leftThrottle() > 0:#self.driverController.getAButton():
+            self.intakeArm.set(-.25 * self.toolController.leftThrottle()) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
+            self.intakeArmFollower.set(-.25 * self.toolController.leftThrottle())
             #makes intake go out at half speed
         else:
             self.intakeArm.set(0)
@@ -151,7 +154,12 @@ class MyRobot(commands2.TimedCommandRobot):
         #probably some weird limelight stuff
         self.flywheelOne.set(1 * self.toolController.rightThrottle())
         self.flywheelTwo.set(1 * self.toolController.rightThrottle())
-        
+        if self.toolController.getYButton():
+            self.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS))
+            self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
+        else:
+            self.flywheelOne.set(0)
+            self.flywheelTwo.set(0)
         #conveyor code
         if self.toolController.getAButton():
             self.conveyorMotor.set(-.5)
