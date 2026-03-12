@@ -16,10 +16,10 @@ from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
 from wpilib import DriverStation
-import limelight
-import limelightresults
-import json
-import time
+from commands2.button import CommandXboxController, Trigger#import limelight
+#import limelightresults
+#import json
+#import time
 
 from phoenix6 import HootAutoReplay
 
@@ -48,7 +48,7 @@ class MyRobot(commands2.TimedCommandRobot):
         self.intakePower = rev.SparkMax(20,BRUSHLESS)
         self.transferMotor = rev.SparkMax(21,BRUSHLESS)
         self.conveyorMotor = rev.SparkMax(22, BRUSHLESS)
-        self.limelight = limelight.limelight("limelight")
+        #self.limelight = limelight.limelight("Limelight")
         
         # Drive Motors
         #self.intakeArm           : REVSparkMax = self.addDriveMotor(REVSparkMax(intakeArm, BRUSHLESS))
@@ -75,7 +75,7 @@ class MyRobot(commands2.TimedCommandRobot):
         # autonomous chooser on the dashboard.
         self.container = RobotContainer()
         self.IMU.reset()
-        self.targetRPM = 4500
+        self.targetRPM = 2700
         self.targetRPS = self.targetRPM / 60
 
 
@@ -133,23 +133,24 @@ class MyRobot(commands2.TimedCommandRobot):
     def teleopPeriodic(self) -> None:
         """This function is called periodically during operator control"""
         #intake code
-        if self.toolController.rightThrottle > 0: #self.driverController.getYButton(): bmmmmmmm TRIGGERS!!!!!!!!!!!!
-            self.intakeArm.set(.25 * self.toolController.rightThrottle()) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
-            self.intakeArmFollower.set(.25 * self.toolController.rightThrottle()) 
+        #Throttles are intake arm, r'
+        if self.toolController.rightThrottle() > 0: #self.driverController.getYButton(): bmmmmmmm TRIGGERS!!!!!!!!!!!!
+            self.intakeArm.set(.5 * self.toolController.rightThrottle()) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
+            self.intakeArmFollower.set(-.5 * self.toolController.rightThrottle()) 
             #makes intake go in at half speed
-        elif self.toolController.leftThrottle() > 0:#self.driverController.getAButton():
-            self.intakeArm.set(-.25 * self.toolController.leftThrottle()) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
-            self.intakeArmFollower.set(-.25 * self.toolController.leftThrottle())
+        elif self.toolController.getRawAxis(2) > 0:#self.driverController.getAButton():
+            self.intakeArm.set(-.4 * self.toolController.getRawAxis(2)) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
+            self.intakeArmFollower.set(.4* self.toolController.getRawAxis(2))
             #makes intake go out at half speed
         else:
             self.intakeArm.set(0)
             self.intakeArmFollower.set(0)
             #sets intake power to 0 when nothing is pressed
 
-        if self.toolController.rightBumper():#self.driverController.rightBumper():
+        if self.toolController.getAButton():#self.driverController.rightBumper():
             self.intakePower.set(-.5)
             #makes the intake go forward
-        elif self.toolController.leftBumper():#self.driverController.leftBumper():
+        elif self.toolController.getAButton():#self.driverController.leftBumper():
             self.intakePower.set(.5)
             #makes intake go backward
         else:
@@ -157,8 +158,6 @@ class MyRobot(commands2.TimedCommandRobot):
             #stops the intake 
         #flywheel code
         #probably some weird limelight stuff
-        self.flywheelOne.set(1 * self.toolController.rightThrottle())
-        self.flywheelTwo.set(1 * self.toolController.rightThrottle())
         if self.toolController.getYButton():
             self.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS))
             self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
@@ -174,12 +173,13 @@ class MyRobot(commands2.TimedCommandRobot):
             self.transferMotor.set(0)
 
         # Servos thats crazy
-        self.hoodServoOne.setAngle(self.angle)
-        self.hoodServoOne.setAngle(self.angle)
+
         if self.toolController.dpadUp():
-            self.angle += 2
+            self.hoodServoOne.changeAngle(2)
+            self.hoodServoTwo.changeAngle(2)
         elif self.toolController.dpadDown():
-            self.angle -= 2
+            self.hoodServoOne.changeAngle(-2)
+            self.hoodServoTwo.changeAngle(-2)
 
     def testInit(self) -> None:
         # Cancels all running commands at the start of test mode
