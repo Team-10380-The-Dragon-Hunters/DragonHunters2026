@@ -12,6 +12,10 @@ from constants import *
 from phoenix6 import CANBus, controls, hardware
 from robotcontainer import RobotContainer
 from XboxController import XboxController
+from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.controller import PPHolonomicDriveController
+from pathplannerlib.config import RobotConfig, PIDConstants
+from wpilib import DriverStation
 
 from phoenix6 import HootAutoReplay
 
