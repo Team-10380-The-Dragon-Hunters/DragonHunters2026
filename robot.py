@@ -16,7 +16,8 @@ from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
 from wpilib import DriverStation
-from commands2.button import CommandXboxController, Trigger#import limelight
+from commands2.button import CommandXboxController, Trigger
+#import limelight
 #import limelightresults
 #import json
 #import time
@@ -40,7 +41,7 @@ class MyRobot(commands2.TimedCommandRobot):
         
         self.flywheelOne = hardware.TalonFX(16, CANBus("rio"))
         self.flywheelTwo = hardware.TalonFX(17, CANBus("rio"))
-        self.IMU = hardware.Pigeon2(23, CANBus("rio"))
+        self.IMU = hardware.Pigeon2(0, CANBus("rio"))
         #rev.SparkMax(deviceID: SupportsInt | SupportsIndex, type: rev._rev.SparkLowLevel.MotorType)
         # CAN ID
         self.intakeArm = rev.SparkMax(18, BRUSHLESS)
@@ -110,10 +111,7 @@ class MyRobot(commands2.TimedCommandRobot):
 
     def autonomousInit(self) -> None:
         """This autonomous runs the autonomous command selected by your RobotContainer class."""
-        # Another option that allows you to specify the default auto by its name
-      #  self.autoChooser = AutoBuilder.buildAutoChooser("topAuto")
-      #  self.autonomousCommand = self.container.getAutonomousCommand()
-    #    SmartDashboard.putData("Auto Chooser", self.autoChooser)
+        self.autonomousCommand = self.container.getAutonomousCommand()
 
         if self.autonomousCommand:
             commands2.CommandScheduler.getInstance().schedule(self.autonomousCommand)
@@ -161,7 +159,7 @@ class MyRobot(commands2.TimedCommandRobot):
         if self.toolController.getRawButton(4):# x button
             self.flywheelOne.set(-.6)
             self.flywheelTwo.set(.6)
-            #set.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS))
+            #set.flywheelOne.set_control(-controls.VelocityVoltage(self.targetRPS))
             #self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
         else:
             self.flywheelOne.set(0)
