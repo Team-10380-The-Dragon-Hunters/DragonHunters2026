@@ -55,7 +55,7 @@ class RobotContainer:
         self._joystick = CommandXboxController(0)
 
         self.drivetrain = TunerConstants.create_drivetrain()
-        NamedCommands.registerCommands(
+        NamedCommands.registerCommand(
             "transfer",
             InstantCommand(lambda: self.transferMotor.set(0.5))
         )
@@ -87,17 +87,12 @@ class RobotContainer:
             "shootTwoStop",
             InstantCommand(lambda: self.flywheelTwo.set(0))
         )
+        self._auto_chooser = AutoBuilder.buildAutoChooser("Tests")
+        SmartDashboard.putData("Auto Mode", self._auto_chooser) #was being weird earlier, might need to be changed
+
         # Configure the button bindings
         self.configureButtonBindings()
-
-
-        self.autoChooser = AutoBuilder.buildAutoChooser()
-        SmartDashboard.putData("Auto Chooser", self.autoChooser)
-    def getAutonomousCommand():
-        # This method loads the auto when it is called, however, it is recommended
-        # to first load your paths/autos when code starts, then return the
-        # pre-loaded auto/path
-        return PathPlannerAuto('Example Auto')
+        
 
     def configureButtonBindings(self) -> None:
         """
@@ -191,8 +186,11 @@ class RobotContainer:
             # Finally idle for the rest of auton
             self.drivetrain.apply_request(lambda: idle)
         )
-    def getAutoCommand():
-        # This method loads the auto when it is called, however, it is recommended
-        # to first load your paths/autos when code starts, then return the
-        # pre-loaded auto/path
-        return PathPlannerAuto('mainAuto')
+
+    def getAutonomousCommand(self) -> commands2.Command:
+        """
+        Use this to pass the autonomous command to the main {@link Robot} class.
+
+        :returns: the command to run in autonomous
+        """
+        return self._auto_chooser.getSelected()

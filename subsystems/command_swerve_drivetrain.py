@@ -10,6 +10,7 @@ from constants import *
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
+from wpimath.kinematics import ChassisSpeeds
 
 
 from generated.tuner_constants import TunerSwerveDrivetrain
@@ -137,7 +138,6 @@ class CommandSwerveDrivetrain(Subsystem, TunerSwerveDrivetrain):
         TunerSwerveDrivetrain.__init__(
             self, drivetrain_constants, arg0, arg1, arg2, arg3
         )
-        
 
         self._sim_notifier: Notifier | None = None
         self._last_sim_time: units.second = 0.0
@@ -149,19 +149,6 @@ class CommandSwerveDrivetrain(Subsystem, TunerSwerveDrivetrain):
         self._translation_characterization = swerve.requests.SysIdSwerveTranslation()
         self._steer_characterization = swerve.requests.SysIdSwerveSteerGains()
         self._rotation_characterization = swerve.requests.SysIdSwerveRotation()
-        #AutoBuilder.configure( #NEW start
-        #    self.getPose, # Robot pose supplier
-        #    self.resetPose, # Method to reset odometry (will be called if your auto has a starting pose)
-        #    self.getRobotRelativeSpeeds, # ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-        #    lambda speeds, feedforwards: self.driveRobotRelative(speeds), # Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also outputs individual module feedforwards
-        #    PPHolonomicDriveController( # PPHolonomicController is the built in path following controller for holonomic drive trains
-        #        PIDConstants(5.0, 0.0, 0.0), # Translation PID constants
-        #        PIDConstants(5.0, 0.0, 0.0) # Rotation PID constants
-        #    ),
-        #    config, # The robot configuration
-        #    self.shouldFlipPath, # Supplier to control path flipping based on alliance color
-        #    self # Reference to this subsystem to set requirements
-        #)#NEW end
 
         self._sys_id_routine_translation = SysIdRoutine(
             SysIdRoutine.Config(
@@ -243,7 +230,32 @@ class CommandSwerveDrivetrain(Subsystem, TunerSwerveDrivetrain):
 
         if utils.is_simulation():
             self._start_sim_thread()
+        self._configure_auto_builder()
 
+    def _configure_auto_builder(self):
+        config = RobotConfig.fromGUISettings()
+        AutoBuilder.configure(
+            lambda: self.get_state().pose,   # Supplier of current robot pose
+            self.reset_pose,                 # Consumer for seeding pose against auto
+            lambda: self.get_state().speeds, # Supplier of current robot speeds
+            # Consumer of ChassisSpeeds and feedforwards to drive the robot
+            lambda speeds, feedforwards: self.set_control(
+                self._apply_robot_speeds
+                .with_speeds(ChassisSpeeds.discretize(speeds, 0.020))
+                .with_wheel_force_feedforwards_x(feedforwards.robotRelativeForcesXNewtons)
+                .with_wheel_force_feedforwards_y(feedforwards.robotRelativeForcesYNewtons)
+            ),
+            PPHolonomicDriveController(
+                # PID constants for translation
+                PIDConstants(.1, 0.0, 0.0), #Lowkey kinda sus, from tunerconstants, but may be wrong
+                # PID constants for rotation#TUNE IF TIME
+                PIDConstants(100, 0.0, 0.5)
+            ),
+            config,
+            # Assume the path needs to be flipped for Red vs Blue, this is normally the case
+            lambda: (DriverStation.getAlliance() or DriverStation.Alliance.kBlue) == DriverStation.Alliance.kRed,
+            self # Subsystem for requirements
+        )
     def apply_request(
         self, request: Callable[[], swerve.requests.SwerveRequest]
     ) -> Command:

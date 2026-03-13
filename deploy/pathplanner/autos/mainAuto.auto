@@ -7,7 +7,55 @@
         {
           "type": "named",
           "data": {
-            "name": null
+            "name": "conveyor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "driveBack"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "transfer"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootOne"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootTwo"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "conveyorStop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "transferStop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootOneStop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootTwoStop"
           }
         }
       ]
