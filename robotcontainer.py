@@ -5,7 +5,7 @@
 #
 
 import commands2
-from commands2 import cmd
+from commands2 import cmd, InstantCommand
 from commands2.button import CommandXboxController, Trigger
 from commands2.sysid import SysIdRoutine
 
@@ -13,10 +13,12 @@ from generated.tuner_constants import TunerConstants
 from telemetry import Telemetry
 
 from phoenix6 import swerve
-from wpilib import DriverStation
+from wpilib import DriverStation, SmartDashboard
 from wpimath.geometry import Rotation2d
 from wpimath.units import rotationsToRadians
-
+from pathplannerlib.auto import AutoBuilder, NamedCommands
+from pathplannerlib.auto import PathPlannerAuto
+from phoenix6 import CANBus, controls, hardware
 
 class RobotContainer:
     """
@@ -53,9 +55,49 @@ class RobotContainer:
         self._joystick = CommandXboxController(0)
 
         self.drivetrain = TunerConstants.create_drivetrain()
-
+        NamedCommands.registerCommands(
+            "transfer",
+            InstantCommand(lambda: self.transferMotor.set(0.5))
+        )
+        NamedCommands.registerCommand(
+            "conveyor",
+            InstantCommand(lambda: self.conveyorMotor.set(0.5))
+        )
+        NamedCommands.registerCommand(
+            "shootOne",
+           InstantCommand(lambda:self.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS)))
+        )
+        NamedCommands.registerCommand(
+            "shootTwo",
+            InstantCommand(lambda:self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))),
+        )
+        NamedCommands.registerCommand(
+            "conveyorStop",
+            InstantCommand(lambda: self.conveyorMotor.set(0))
+        )
+        NamedCommands.registerCommand(
+            "transferStop",
+            InstantCommand(lambda: self.transferMotor.set(0))
+        )
+        NamedCommands.registerCommand(
+            "shootOneStop",
+            InstantCommand(lambda: self.flywheelOne.set(0))
+        )
+        NamedCommands.registerCommand(
+            "shootTwoStop",
+            InstantCommand(lambda: self.flywheelTwo.set(0))
+        )
         # Configure the button bindings
         self.configureButtonBindings()
+
+
+        self.autoChooser = AutoBuilder.buildAutoChooser()
+        SmartDashboard.putData("Auto Chooser", self.autoChooser)
+    def getAutonomousCommand():
+        # This method loads the auto when it is called, however, it is recommended
+        # to first load your paths/autos when code starts, then return the
+        # pre-loaded auto/path
+        return PathPlannerAuto('Example Auto')
 
     def configureButtonBindings(self) -> None:
         """
@@ -122,14 +164,14 @@ class RobotContainer:
         self.drivetrain.register_telemetry(
             lambda state: self._logger.telemeterize(state)
         )
-
+        
     def getAutonomousCommand(self) -> commands2.Command:
         """
         Use this to pass the autonomous command to the main {@link Robot} class.
 
         :returns: the command to run in autonomous
         """
-        # Simple drive forward auton
+        # Simple drive forward auto
         idle = swerve.requests.Idle()
         return cmd.sequence(
             # Reset our field centric heading to match the robot
@@ -149,3 +191,8 @@ class RobotContainer:
             # Finally idle for the rest of auton
             self.drivetrain.apply_request(lambda: idle)
         )
+    def getAutoCommand():
+        # This method loads the auto when it is called, however, it is recommended
+        # to first load your paths/autos when code starts, then return the
+        # pre-loaded auto/path
+        return PathPlannerAuto('mainAuto')
