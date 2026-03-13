@@ -247,9 +247,9 @@ class CommandSwerveDrivetrain(Subsystem, TunerSwerveDrivetrain):
             ),
             PPHolonomicDriveController(
                 # PID constants for translation
-                PIDConstants(.1, 0.0, 0.0), #Lowkey kinda sus, from tunerconstants, but may be wrong
+                PIDConstants(2.5, 0.0, 0.0), #Lowkey kinda sus, from tunerconstants, but may be wrong
                 # PID constants for rotation#TUNE IF TIME
-                PIDConstants(100, 0.0, 0.5)
+                PIDConstants(5, 0.0, 0.05)
             ),
             config,
             # Assume the path needs to be flipped for Red vs Blue, this is normally the case

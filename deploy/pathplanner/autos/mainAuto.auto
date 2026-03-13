@@ -5,21 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "conveyor"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "driveBack"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "transfer"
           }
         },
         {
@@ -35,15 +23,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "conveyorStop"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "transferStop"
+            "waitTime": 7.0
           }
         },
         {

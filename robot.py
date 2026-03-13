@@ -42,8 +42,8 @@ class MyRobot(commands2.TimedCommandRobot):
         self.flywheelOne = hardware.TalonFX(16, CANBus("rio"))
         self.flywheelTwo = hardware.TalonFX(17, CANBus("rio"))
         cfg = configs.TalonFXConfiguration()
-        cfg.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
-        self.flywheelOne.configurator.apply(cfg)
+        #cfg.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+        #self.flywheelOne.configurator.apply(cfg)
         slot0_configs = configs.Slot0Configs()
         slot0_configs.k_s = 0.1 # Add 0.1 V output to overcome static friction
         slot0_configs.k_v = 0.12 # A velocity target of 1 rps results in 0.12 V output
@@ -51,6 +51,7 @@ class MyRobot(commands2.TimedCommandRobot):
         slot0_configs.k_i = 0 # no output for integrated error
         slot0_configs.k_d = 0 # no output for error derivative #TUNE PLEASE
         self.flywheelOne.configurator.apply(slot0_configs)
+        self.flywheelTwo.configurator.apply(slot0_configs)
         
         #differential strict follower code need to figure out documentation
         self.flywheelTwo.configurator.apply(slot0_configs) #DO NOT KEEP!! FIGURE OUT FOLLOWER CODE
@@ -162,10 +163,10 @@ class MyRobot(commands2.TimedCommandRobot):
             #sets intake power to 0 when nothing is pressed
 
         if self.toolController.getRawButton(5):#self.driverController.rightBumper():
-            self.intakePower.set(.5)
+            self.intakePower.set(1)
             #makes the intake go forward
         elif self.toolController.getRawButton(6):#self.driverController.leftBumper(): # O button
-            self.intakePower.set(-.5)
+            self.intakePower.set(-1)
             #makes intake go backward
         else:
             self.intakePower.set(0)
@@ -174,7 +175,7 @@ class MyRobot(commands2.TimedCommandRobot):
         #probably some weird limelight stuff
         if self.toolController.getRawButton(4):# x button
             self.flywheelOne.set(.6)
-            self.flywheelTwo.set(.6)
+            self.flywheelTwo.set(-.6)
             #set.flywheelOne.set_control(-controls.VelocityVoltage(self.targetRPS))
             #self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
         else:
@@ -182,13 +183,15 @@ class MyRobot(commands2.TimedCommandRobot):
             self.flywheelTwo.set(0)
         #conveyor code
         if self.toolController.getRawButton(1):#triangle and square
-            self.conveyorMotor.set(-.5)
-            self.transferMotor.set(.5)
+            self.conveyorMotor.set(-1)
         if self.toolController.getRawButton(2):
             self.conveyorMotor.set(0)
+        if self.toolController.getRawButton(1):
+            self.transferMotor.set(.75)
+        if self.toolController.getRawButton(2):
             self.transferMotor.set(0)
         if self.toolController.getRawButton(3):
-            self.transferMotor.set(-.5)
+            self.transferMotor.set(.75)
         else:
             self.transferMotor.set(0)
 
