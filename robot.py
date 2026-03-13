@@ -147,29 +147,35 @@ class MyRobot(commands2.TimedCommandRobot):
             self.intakeArmFollower.set(0)
             #sets intake power to 0 when nothing is pressed
 
-        if self.toolController.getAButton():#self.driverController.rightBumper():
-            self.intakePower.set(-.5)
-            #makes the intake go forward
-        elif self.toolController.getAButton():#self.driverController.leftBumper():
+        if self.toolController.getRawButton(5):#self.driverController.rightBumper():
             self.intakePower.set(.5)
+            #makes the intake go forward
+        elif self.toolController.getRawButton(6):#self.driverController.leftBumper(): # O button
+            self.intakePower.set(-.5)
             #makes intake go backward
         else:
             self.intakePower.set(0)
             #stops the intake 
         #flywheel code
         #probably some weird limelight stuff
-        if self.toolController.getYButton():
-            self.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS))
-            self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
+        if self.toolController.getRawButton(4):# x button
+            self.flywheelOne.set(-.6)
+            self.flywheelTwo.set(.6)
+            #set.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS))
+            #self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
         else:
             self.flywheelOne.set(0)
             self.flywheelTwo.set(0)
         #conveyor code
-        if self.toolController.getAButton():
+        if self.toolController.getRawButton(1):#triangle and square
             self.conveyorMotor.set(-.5)
             self.transferMotor.set(.5)
-        if self.toolController.getBButton():
+        if self.toolController.getRawButton(2):
             self.conveyorMotor.set(0)
+            self.transferMotor.set(0)
+        if self.toolController.getRawButton(3):
+            self.transferMotor.set(-.5)
+        else:
             self.transferMotor.set(0)
 
         # Servos thats crazy
