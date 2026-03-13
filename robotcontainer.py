@@ -65,11 +65,11 @@ class RobotContainer:
         )
         NamedCommands.registerCommand(
             "shootOne",
-           InstantCommand(lambda:self.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS)))
+           InstantCommand(lambda:self.flywheelOne.set(0.6)) #lambda:self.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS))
         )
         NamedCommands.registerCommand(
             "shootTwo",
-            InstantCommand(lambda:self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))),
+            InstantCommand(lambda:self.flywheelTwo.set(0.6)), #lambda:self.flywheelOne.set_control(controls.VelocityVoltage(self.targetRPS))
         )
         NamedCommands.registerCommand(
             "conveyorStop",
