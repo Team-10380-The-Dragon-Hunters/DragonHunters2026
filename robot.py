@@ -9,7 +9,7 @@ import wpilib
 import commands2
 import typing
 from constants import *
-from phoenix6 import CANBus, controls, hardware
+from phoenix6 import CANBus, controls, hardware, signals, configs, CANBus
 from robotcontainer import RobotContainer
 from XboxController import XboxController
 from pathplannerlib.auto import AutoBuilder
@@ -41,6 +41,22 @@ class MyRobot(commands2.TimedCommandRobot):
         
         self.flywheelOne = hardware.TalonFX(16, CANBus("rio"))
         self.flywheelTwo = hardware.TalonFX(17, CANBus("rio"))
+        cfg = configs.TalonFXConfiguration()
+        cfg.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+        self.flywheelOne.configurator.apply(cfg)
+        slot0_configs = configs.Slot0Configs()
+        slot0_configs.k_s = 0.1 # Add 0.1 V output to overcome static friction
+        slot0_configs.k_v = 0.12 # A velocity target of 1 rps results in 0.12 V output
+        slot0_configs.k_p = 0.11 # An error of 1 rps results in 0.11 V output
+        slot0_configs.k_i = 0 # no output for integrated error
+        slot0_configs.k_d = 0 # no output for error derivative #TUNE PLEASE
+        self.flywheelOne.configurator.apply(slot0_configs)
+        
+        #differential strict follower code need to figure out documentation
+        self.flywheelTwo.configurator.apply(slot0_configs) #DO NOT KEEP!! FIGURE OUT FOLLOWER CODE
+        #AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+
+
         self.IMU = hardware.Pigeon2(0, CANBus("rio"))
         #rev.SparkMax(deviceID: SupportsInt | SupportsIndex, type: rev._rev.SparkLowLevel.MotorType)
         # CAN ID
@@ -157,7 +173,7 @@ class MyRobot(commands2.TimedCommandRobot):
         #flywheel code
         #probably some weird limelight stuff
         if self.toolController.getRawButton(4):# x button
-            self.flywheelOne.set(-.6)
+            self.flywheelOne.set(.6)
             self.flywheelTwo.set(.6)
             #set.flywheelOne.set_control(-controls.VelocityVoltage(self.targetRPS))
             #self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
