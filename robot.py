@@ -166,9 +166,9 @@ class MyRobot(commands2.TimedCommandRobot):
         if self.toolController.getRawButton(4):# x button
             self.flywheelOne.set(.6) #2048 cpr
             self.flywheelTwo.set(-.6) 
-        #elif self.toolController.getPOV(180):# y button
-         #   self.flywheelOne.set(self.flywheelPower)
-          #  self.flywheelTwo.set(-self.flywheelPower)
+        elif self.toolController.getPOV(0):
+            self.flywheelOne.set(self.flywheelPower)
+            self.flywheelTwo.set(-self.flywheelPower)
         else:
             self.flywheelOne.set(0)
             self.flywheelTwo.set(0)
@@ -182,12 +182,12 @@ class MyRobot(commands2.TimedCommandRobot):
 
         # Servos thats crazy
 
-        #if self.toolController.dpadUp():
-            #self.hoodServoOne.changeAngle(2)
-            #self.hoodServoTwo.changeAngle(2)
-        #elif self.toolController.dpadDown():
-            #self.hoodServoOne.changeAngle(-2)
-            #self.hoodServoTwo.changeAngle(-2)
+        #if self.toolController.getPOV(90):
+        #    self.hoodServoOne.changeAngle(2)
+        #    self.hoodServoTwo.changeAngle(2)
+        #elif self.toolController.getPOV(270):
+        #    self.hoodServoOne.changeAngle(-2)
+        #    self.hoodServoTwo.changeAngle(-2)
 
     def testInit(self) -> None:
         # Cancels all running commands at the start of test mode
