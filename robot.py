@@ -41,21 +41,7 @@ class MyRobot(commands2.TimedCommandRobot):
         
         self.flywheelOne = hardware.TalonFX(16, CANBus("rio"))
         self.flywheelTwo = hardware.TalonFX(17, CANBus("rio"))
-        cfg = configs.TalonFXConfiguration()
-        #cfg.motor_output.inverted = configs.config_groups.InvertedValue.COUNTER_CLOCKWISE_POSITIVE
-        #self.flywheelOne.configurator.apply(cfg)
-        slot0_configs = configs.Slot0Configs()
-        slot0_configs.k_s = 0.1 # Add 0.1 V output to overcome static friction
-        slot0_configs.k_v = 0.12 # A velocity target of 1 rps results in 0.12 V output
-        slot0_configs.k_p = 0.11 # An error of 1 rps results in 0.11 V output
-        slot0_configs.k_i = 0 # no output for integrated error
-        slot0_configs.k_d = 0 # no output for error derivative #TUNE PLEASE
-        self.flywheelOne.configurator.apply(slot0_configs)
-        self.flywheelTwo.configurator.apply(slot0_configs)
-        
-        #differential strict follower code need to figure out documentation
-        self.flywheelTwo.configurator.apply(slot0_configs) #DO NOT KEEP!! FIGURE OUT FOLLOWER CODE
-        #AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+        self.flywheelPower = 0.6
 
 
         self.IMU = hardware.Pigeon2(0, CANBus("rio"))
@@ -150,12 +136,12 @@ class MyRobot(commands2.TimedCommandRobot):
         #intake code
         #Throttles are intake arm, r'
         if self.toolController.rightThrottle() > 0: #self.driverController.getYButton(): bmmmmmmm TRIGGERS!!!!!!!!!!!!
-            self.intakeArm.set(.5 * self.toolController.rightThrottle()) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
-            self.intakeArmFollower.set(-.5 * self.toolController.rightThrottle()) 
+            self.intakeArm.set(-.5 * self.toolController.rightThrottle()) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
+            self.intakeArmFollower.set(.5 * self.toolController.rightThrottle()) 
             #makes intake go in at half speed
         elif self.toolController.getRawAxis(2) > 0:#self.driverController.getAButton():
-            self.intakeArm.set(-.4 * self.toolController.getRawAxis(2)) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
-            self.intakeArmFollower.set(.4* self.toolController.getRawAxis(2))
+            self.intakeArm.set(.5 * self.toolController.getRawAxis(2)) #ADD SOFTWARE LIMITS OR DEATH BE UPON YE
+            self.intakeArmFollower.set(-.5* self.toolController.getRawAxis(2))
             #makes intake go out at half speed
         else:
             self.intakeArm.set(0)
@@ -170,39 +156,38 @@ class MyRobot(commands2.TimedCommandRobot):
             #makes intake go backward
         else:
             self.intakePower.set(0)
+        if self.toolController.getPOV(90):
+            self.flywheelPower += 0.05
+        if self.toolController.getPOV(270):
+            self.flywheelPower -= 0.05
             #stops the intake 
         #flywheel code
         #probably some weird limelight stuff
         if self.toolController.getRawButton(4):# x button
-            self.flywheelOne.set(.6)
-            self.flywheelTwo.set(-.6)
-            #set.flywheelOne.set_control(-controls.VelocityVoltage(self.targetRPS))
-            #self.flywheelTwo.set_control(controls.VelocityVoltage(self.targetRPS))
+            self.flywheelOne.set(.6) #2048 cpr
+            self.flywheelTwo.set(-.6) 
+        elif self.toolController.getPOV(180):# y button
+            self.flywheelOne.set(self.flywheelPower)
+            self.flywheelTwo.set(-self.flywheelPower)
         else:
             self.flywheelOne.set(0)
             self.flywheelTwo.set(0)
         #conveyor code
         if self.toolController.getRawButton(1):#triangle and square
             self.conveyorMotor.set(-1)
+            self.transferMotor.set(.75)
         if self.toolController.getRawButton(2):
             self.conveyorMotor.set(0)
-        if self.toolController.getRawButton(1):
-            self.transferMotor.set(.75)
-        if self.toolController.getRawButton(2):
-            self.transferMotor.set(0)
-        if self.toolController.getRawButton(3):
-            self.transferMotor.set(.75)
-        else:
             self.transferMotor.set(0)
 
         # Servos thats crazy
 
-        if self.toolController.dpadUp():
-            self.hoodServoOne.changeAngle(2)
-            self.hoodServoTwo.changeAngle(2)
-        elif self.toolController.dpadDown():
-            self.hoodServoOne.changeAngle(-2)
-            self.hoodServoTwo.changeAngle(-2)
+        #if self.toolController.dpadUp():
+            #self.hoodServoOne.changeAngle(2)
+            #self.hoodServoTwo.changeAngle(2)
+        #elif self.toolController.dpadDown():
+            #self.hoodServoOne.changeAngle(-2)
+            #self.hoodServoTwo.changeAngle(-2)
 
     def testInit(self) -> None:
         # Cancels all running commands at the start of test mode
