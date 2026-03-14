@@ -4,10 +4,11 @@
 # Open Source Software; you can modify and/or share it under the terms of
 # the WPILib BSD license file in the root directory of this project.
 #
-
+import robotcontainer
 import wpilib
 import commands2
 import typing
+import time
 from constants import *
 from phoenix6 import CANBus, controls, hardware, signals, configs, CANBus
 from robotcontainer import RobotContainer
@@ -17,6 +18,21 @@ from pathplannerlib.controller import PPHolonomicDriveController
 from pathplannerlib.config import RobotConfig, PIDConstants
 from wpilib import DriverStation
 from commands2.button import CommandXboxController, Trigger
+import commands2
+from commands2 import cmd, InstantCommand
+from commands2.button import CommandXboxController, Trigger
+from commands2.sysid import SysIdRoutine
+
+from generated.tuner_constants import TunerConstants
+from telemetry import Telemetry
+
+from phoenix6 import swerve
+from wpilib import DriverStation, SmartDashboard
+from wpimath.geometry import Rotation2d
+from wpimath.units import rotationsToRadians
+from pathplannerlib.auto import AutoBuilder, NamedCommands
+from pathplannerlib.auto import PathPlannerAuto
+from phoenix6 import CANBus, controls, hardware
 #import limelight
 #import limelightresults
 #import json
@@ -38,6 +54,8 @@ class MyRobot(commands2.TimedCommandRobot):
         This function is run when the robot is first started up and should be used for any
         initialization code.
         """
+        self.drivetrain = TunerConstants.create_drivetrain()
+        
         
         self.flywheelOne = hardware.TalonFX(16, CANBus("rio"))
         self.flywheelTwo = hardware.TalonFX(17, CANBus("rio"))
@@ -114,10 +132,30 @@ class MyRobot(commands2.TimedCommandRobot):
 
     def autonomousInit(self) -> None:
         """This autonomous runs the autonomous command selected by your RobotContainer class."""
-        self.autonomousCommand = self.container.getAutonomousCommand()
-
-        if self.autonomousCommand:
-            commands2.CommandScheduler.getInstance().schedule(self.autonomousCommand)
+        idle = swerve.requests.Idle()
+        self.drivetrain.runOnce(
+                lambda: self.drivetrain.seed_field_centric(Rotation2d.fromDegrees(0))
+        ),
+            # Then slowly drive forward (away from us) for 5 seconds.
+        self.drivetrain.apply_request(
+            lambda: (
+                self._drive.with_velocity_x(0.5)
+                .with_velocity_y(0)
+                .with_rotational_rate(0)
+            )
+        ).withTimeout(1.25),
+            # Finally idle for the rest of auton
+        self.drivetrain.apply_request(lambda: idle)
+        self.transferMotor.set(.75)
+        self.conveyorMotor.set(-1)
+        self.flywheelOne.set(.6)
+        self.flywheelTwo.set(-.6)
+        time.sleep(7)
+        self.transferMotor.set(0)
+        self.conveyorMotor.set(0)
+        self.flywheelOne.set(0)
+        self.flywheelTwo.set(0)
+        
 
     def autonomousPeriodic(self) -> None:
         """This function is called periodically during autonomous"""
@@ -128,8 +166,9 @@ class MyRobot(commands2.TimedCommandRobot):
         # teleop starts running. If you want the autonomous to
         # continue until interrupted by another command, remove
         # this line or comment it out.
-        if self.autonomousCommand:
-            commands2.CommandScheduler.getInstance().cancel(self.autonomousCommand)
+        #if self.autonomousCommand:
+         #   commands2.CommandScheduler.getInstance().cancel(self.autonomousCommand)
+         pass
 
     def teleopPeriodic(self) -> None:
         """This function is called periodically during operator control"""
@@ -166,9 +205,9 @@ class MyRobot(commands2.TimedCommandRobot):
         if self.toolController.getRawButton(4):# x button
             self.flywheelOne.set(.6) #2048 cpr
             self.flywheelTwo.set(-.6) 
-        elif self.toolController.getPOV(0):
-            self.flywheelOne.set(self.flywheelPower)
-            self.flywheelTwo.set(-self.flywheelPower)
+        #elif self.toolController.getPOV(0):
+         #   self.flywheelOne.set(self.flywheelPower)
+          #  self.flywheelTwo.set(-self.flywheelPower)
         else:
             self.flywheelOne.set(0)
             self.flywheelTwo.set(0)
