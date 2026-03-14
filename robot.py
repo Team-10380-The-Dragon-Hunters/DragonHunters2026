@@ -166,9 +166,9 @@ class MyRobot(commands2.TimedCommandRobot):
         if self.toolController.getRawButton(4):# x button
             self.flywheelOne.set(.6) #2048 cpr
             self.flywheelTwo.set(-.6) 
-        elif self.toolController.getPOV(180):# y button
-            self.flywheelOne.set(self.flywheelPower)
-            self.flywheelTwo.set(-self.flywheelPower)
+        #elif self.toolController.getPOV(180):# y button
+         #   self.flywheelOne.set(self.flywheelPower)
+          #  self.flywheelTwo.set(-self.flywheelPower)
         else:
             self.flywheelOne.set(0)
             self.flywheelTwo.set(0)
